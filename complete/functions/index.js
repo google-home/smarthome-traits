@@ -83,6 +83,7 @@ app.onSync((body) => {
           'action.devices.traits.OnOff',
           'action.devices.traits.StartStop',
           'action.devices.traits.RunCycle',
+          'action.devices.traits.Modes',
           'action.devices.traits.Toggles',
         ],
         name: {
@@ -99,6 +100,33 @@ app.onSync((body) => {
         willReportState: true,
         attributes: {
           pausable: true,
+          availableModes: [{
+            name: 'load',
+            name_values: [{
+              name_synonym: ['load'],
+              lang: 'en'
+            }],
+            settings: [{
+              setting_name: 'small',
+              setting_values: [{
+                setting_synonym: ['small'],
+                lang: 'en'
+              }]
+            }, {
+              setting_name: 'medium',
+              setting_values: [{
+                setting_synonym: ['medium'],
+                lang: 'en'
+              }]
+            }, {
+              setting_name: 'large',
+              setting_values: [{
+                setting_synonym: ['large'],
+                lang: 'en'
+              }]
+            }],
+            ordered: true
+          }],
           availableToggles: [{
             name: 'Turbo',
             name_values: [{
@@ -119,6 +147,7 @@ const queryFirebase = async (deviceId) => {
     on: snapshotVal.OnOff.on,
     isPaused: snapshotVal.StartStop.isPaused,
     isRunning: snapshotVal.StartStop.isRunning,
+    load: snapshotVal.Modes.load,
     Turbo: snapshotVal.Toggles.Turbo,
   };
 }
@@ -136,6 +165,9 @@ const queryDevice = async (deviceId) => {
     }],
     currentTotalRemainingTime: 1212,
     currentCycleRemainingTime: 301,
+    currentModeSettings: {
+      load: data.load,
+    },
     currentToggleSettings: {
       Turbo: data.Turbo,
     },
@@ -181,6 +213,10 @@ const updateDevice = async (execution,deviceId) => {
     case 'action.devices.commands.PauseUnpause':
       state = {isPaused: params.pause};
       ref = firebaseRef.child(deviceId).child('StartStop');
+      break;
+    case 'action.devices.commands.SetModes':
+      state = {load: params.updateModeSettings.load};
+      ref = firebaseRef.child(deviceId).child('Modes');
       break;
     case 'action.devices.commands.SetToggles':
       state = {Turbo: params.updateToggleSettings.Turbo};
@@ -267,6 +303,9 @@ exports.reportstate = functions.database.ref('{deviceId}').onWrite(async (change
             on: snapshot.OnOff.on,
             isPaused: snapshot.StartStop.isPaused,
             isRunning: snapshot.StartStop.isRunning,
+            currentModeSettings: {
+              load: snapshot.Modes.load,
+            },
             currentToggleSettings: {
               Turbo: snapshot.Toggles.Turbo,
             },
