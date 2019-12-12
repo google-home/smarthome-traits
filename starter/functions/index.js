@@ -158,11 +158,14 @@ app.onQuery(async (body) => {
   };
 });
 
+//TODO: Add error handling
+
 const updateDevice = async (execution,deviceId) => {
   const {params,command} = execution;
   let state, ref;
   switch (command) {
     case 'action.devices.commands.OnOff':
+      //TODO: Add two-factor authentication
       state = {on: params.on};
       ref = firebaseRef.child(deviceId).child('OnOff');
       break;
@@ -177,7 +180,8 @@ const updateDevice = async (execution,deviceId) => {
     //TODO: Add Modes and Toggles commands
   }
 
-  await ref.update(state);
+  return ref.update(state)
+      .then(() => state);
 };
 
 app.onExecute(async (body) => {
@@ -185,9 +189,9 @@ app.onExecute(async (body) => {
   // Execution results are grouped by status
   const result = {
     ids: [],
-    status: 'SUCCESS',
+    status: '',
     states: {
-      online: true,
+      online: true
     },
   };
 
@@ -199,10 +203,14 @@ app.onExecute(async (body) => {
         executePromises.push(
           updateDevice(execution,device.id)
             .then((data) => {
+              result.status = 'SUCCESS';
               result.ids.push(device.id);
               Object.assign(result.states, data);
             })
-            .catch(() => console.error(`Unable to update ${device.id}`))
+            .catch(() => {
+              console.error(`Unable to update ${device.id}`)
+            //TODO: Add error response handling
+            })
         );
       }
     }

@@ -198,11 +198,29 @@ app.onQuery(async (body) => {
   };
 });
 
+class SmartHomeError extends Error {
+  constructor(errorCode, message) {
+    super(message);
+    this.name = this.constructor.name;
+    this.errorCode = errorCode;
+  }
+}
+
+class ChallengeNeededError extends SmartHomeError {
+  constructor(tfaType) {
+    super('challengeNeeded', tfaType);
+    this.tfaType = tfaType;
+  }
+}
+
 const updateDevice = async (execution,deviceId) => {
-  const {params,command} = execution;
+  const {challenge,params,command} = execution;
   let state, ref;
   switch (command) {
     case 'action.devices.commands.OnOff':
+      if (!challenge || !challenge.ack) {
+        throw new ChallengeNeededError('ackNeeded');
+      }
       state = {on: params.on};
       ref = firebaseRef.child(deviceId).child('OnOff');
       break;
@@ -224,7 +242,8 @@ const updateDevice = async (execution,deviceId) => {
       break;
   }
 
- await ref.update(state);
+  return ref.update(state)
+        .then(() => state);
 };
 
 app.onExecute(async (body) => {
@@ -232,7 +251,7 @@ app.onExecute(async (body) => {
   // Execution results are grouped by status
   const result = {
     ids: [],
-    status: 'SUCCESS',
+    status: '',
     states: {
       online: true,
     },
@@ -246,10 +265,23 @@ app.onExecute(async (body) => {
         executePromises.push(
           updateDevice(execution,device.id)
             .then((data) => {
+              result.status = 'SUCCESS';
               result.ids.push(device.id);
               Object.assign(result.states, data);
             })
-            .catch(() => console.error(`Unable to update ${device.id}`))
+            .catch((error) => {
+              console.error(`Unable to update ${device.id}.`, error);
+              result.ids.push(device.id);
+              if(error instanceof SmartHomeError) {
+                result.status = 'ERROR';
+                result.errorCode = error.errorCode;
+                if(error instanceof ChallengeNeededError) {
+                  result.challengeNeeded = {
+                    type: error.tfaType
+                  };
+                }
+              }
+            })
         );
       }
     }
