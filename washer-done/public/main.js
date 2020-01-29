@@ -104,10 +104,8 @@ SmartHome.prototype.handleData = () => {
         elModesMedium.MaterialRadio.uncheck();
       }
 
-      if (elToggles) {
-        if (washerState.Toggles.Turbo) elToggles.MaterialSwitch.on();
-        else elToggles.MaterialSwitch.off();
-      }
+      if (washerState.Toggles.Turbo) elToggles.MaterialSwitch.on();
+      else elToggles.MaterialSwitch.off();
 
     }
   })
@@ -118,9 +116,6 @@ SmartHome.prototype.updateState = () => {
   const elRunCycle = document.getElementById('demo-washer-runCycle');
   const elStartStopPaused = document.getElementById('demo-washer-startStopPaused');
   const elStartStopRunning = document.getElementById('demo-washer-startStopRunning');
-  //const elModesSmall = document.getElementById('demo-washer-modes-small');
-  //const elModesMedium = document.getElementById('demo-washer-modes-medium');
-  //const elModesLarge = document.getElementById('demo-washer-modes-large');
   const elModes = document.getElementsByName('load');
   const elToggles = document.getElementById('demo-washer-toggles');
 
@@ -139,12 +134,11 @@ SmartHome.prototype.updateState = () => {
     },
     Modes: {
       load: elModesSet,
+    },
+    Toggles: {
+      Turbo: elToggles.classList.contains('is-checked')
     }
   };
-
-  if (elToggles) {
-    pkg.Toggles = {Turbo: elToggles.classList.contains('is-checked')};
-  }
 
   console.log(pkg);
   firebase.database().ref('/').child('washer').set(pkg);
