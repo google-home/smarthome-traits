@@ -83,7 +83,8 @@ app.onSync((body) => {
           'action.devices.traits.OnOff',
           'action.devices.traits.StartStop',
           'action.devices.traits.RunCycle',
-        //TODO: Add Modes and Toggles traits
+        //TODO: Add Modes trait
+        //TODO: Add Toggles trait
         ],
         name: {
           defaultNames: ['My Washer'],
@@ -99,7 +100,8 @@ app.onSync((body) => {
         willReportState: true,
         attributes: {
           pausable: true,
-        //TODO: Add available Modes and Toggles
+        //TODO: Add available Modes
+        //TODO: Add available Toggles
         },
       }],
     },
@@ -113,7 +115,8 @@ const queryFirebase = async (deviceId) => {
     on: snapshotVal.OnOff.on,
     isPaused: snapshotVal.StartStop.isPaused,
     isRunning: snapshotVal.StartStop.isRunning,
-    //TODO: Add Modes and Toggles snapshot
+    //TODO: Add Modes snapshot
+    //TODO: Add Toggles snapshot
   };
 }
 
@@ -130,7 +133,8 @@ const queryDevice = async (deviceId) => {
     }],
     currentTotalRemainingTime: 1212,
     currentCycleRemainingTime: 301,
-    //TODO: Add Modes and Toggles
+    //TODO: Add Modes
+    //TODO: Add Toggles
   };
 }
 
@@ -158,14 +162,15 @@ app.onQuery(async (body) => {
   };
 });
 
-//TODO: Add error handling
+//TODO: Add SmartHome error handling
+//TODO: Add 2FA error handling
 
 const updateDevice = async (execution,deviceId) => {
-  const {params,command} = execution;
+  const {params,command} = execution; //TODO: Add 2FA
   let state, ref;
   switch (command) {
     case 'action.devices.commands.OnOff':
-      //TODO: Add two-factor authentication
+      //TODO: Add 2FA challenge
       state = {on: params.on};
       ref = firebaseRef.child(deviceId).child('OnOff');
       break;
@@ -177,7 +182,8 @@ const updateDevice = async (execution,deviceId) => {
       state = {isPaused: params.pause};
       ref = firebaseRef.child(deviceId).child('StartStop');
       break;
-    //TODO: Add Modes and Toggles commands
+    //TODO: Add Modes command
+    //TODO: Add Toggles command
   }
 
   return ref.update(state)
@@ -207,9 +213,9 @@ app.onExecute(async (body) => {
               result.ids.push(device.id);
               Object.assign(result.states, data);
             })
+            //TODO: Add error response handling
             .catch(() => {
               console.error(`Unable to update ${device.id}`)
-            //TODO: Add error response handling
             })
         );
       }
@@ -264,7 +270,8 @@ exports.reportstate = functions.database.ref('{deviceId}').onWrite(async (change
             on: snapshot.OnOff.on,
             isPaused: snapshot.StartStop.isPaused,
             isRunning: snapshot.StartStop.isRunning,
-            //TODO: Add Modes and Toggles states
+            //TODO: Add Modes state
+            //TODO: Add Toggles state
           },
         },
       },
