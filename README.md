@@ -7,7 +7,7 @@ codelab](https://codelabs.developers.google.com/codelabs/smarthome-traits), whic
 
 * Questions? [Stack Overflow](https://stackoverflow.com/questions/tagged/google-smart-home)
 
-*  If you have found an error in this codelab, please file an issue on
+*  If you have found an error in this codelab, please file an issue on dddd
    [GitHub](https://github.com/googlecodelabs/smarthome-traits/issues)
 
 ## License
